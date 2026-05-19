@@ -13,21 +13,25 @@ app.use(cors());
 app.use(express.json());
 
 // Configuración de la conexión a la base de datos MySQL
-const dbConnection = mysql.createConnection({
+const dbConnection = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'proyecto_db',
-    port: process.env.DB_PORT || 3306
+    port: process.env.DB_PORT || 3306,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-// Conectar a la base de datos
-dbConnection.connect((err) => {
+// Verificar la conexión inicial al pool de la base de datos
+dbConnection.getConnection((err, connection) => {
     if (err) {
-        console.error('Error conectando a la base de datos:', err);
+        console.error('Error conectando a la base de datos MySQL:', err.message);
         return;
     }
-    console.log('Conectado exitosamente a la base de datos MySQL');
+    console.log('Conectado exitosamente al pool de la base de datos MySQL');
+    connection.release();
 });
 
 // Ruta de prueba para verificar que el servidor funciona
